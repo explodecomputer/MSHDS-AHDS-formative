@@ -1,6 +1,6 @@
 
 
-datadir='../../../../data'
+datadir='../../data'
 
 # read in the acceleromter ids and survey data
 accelIds <- read.table(paste0(datadir, '/derived/accel/pids-with-accel.txt'), header=F, col.names='PID')
