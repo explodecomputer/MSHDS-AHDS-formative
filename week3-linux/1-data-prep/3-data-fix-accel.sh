@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-DATADIR='../../../../data'
+DATADIR='../../data'
 
 ##
 ## Removing the first line of each file with format <ACTIGRAPH ID=PARTICIPANT_ID>
