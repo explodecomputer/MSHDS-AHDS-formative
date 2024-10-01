@@ -10,7 +10,7 @@ This code was run on a Macbook Pro (Sonoma 14.7), in bash and R version 4.4.0.
 
 ### Body measures data
 
-There are 9951, data on 9950 participants and a header at the top containing column names. The file is comma separated.
+There are 9951 rows, with data on 9950 participants and a header at the top containing column names. The file is comma separated.
 
 There are 28 columns including:
 - column 1: A column with no name ("") containing the row number
