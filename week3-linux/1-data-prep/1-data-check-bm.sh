@@ -5,7 +5,6 @@ DATADIR='../../data'
 echo -e "\n Top of body measures data file:"
 head ${DATADIR}/original/BMX_D.csv
 
-DATADIR='../../data'
 
 ##
 ## checking the body measures file
