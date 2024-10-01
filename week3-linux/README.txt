@@ -1,6 +1,11 @@
 
 # Formative assessment
 
+## Environment
+
+This code was run on a Macbook Pro (Sonoma 14.7), in bash and R version 4.4.0.
+
+
 ## Description of the data
 
 ### Body measures data
