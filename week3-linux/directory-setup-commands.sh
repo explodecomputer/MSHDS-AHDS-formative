@@ -5,7 +5,7 @@
 ##
 ## making directories
 
-mkdir -d data/original
+mkdir -p data/original
 mkdir data/derived
 
 mkdir code
