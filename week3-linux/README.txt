@@ -20,3 +20,5 @@ The accelerometer files have a header line with format <ACTIGRAPH ID=PARTICIPANT
 The files are tab separated, and there are 8 columns containing accelerometer variables. There is no participant ID as this is contained in the file name (and first line of the file).
 
 There are some lines that have only three columns with NA values.
+
+There are 7455 accelerometer files (with name accel-*.txt).
