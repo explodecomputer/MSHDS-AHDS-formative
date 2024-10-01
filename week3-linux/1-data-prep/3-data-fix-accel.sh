@@ -9,8 +9,8 @@ DATADIR='../../data'
 
 echo -e "\n\nREMOVING FIRST LINE OF FORM  <ACTIGRAPH ID=PARTICIPANT_ID>\n"
 
-mkdir ${DATADIR}/derived/accel/
-cp ${DATADIR}/original/accel/accel*.txt ${DATADIR}/derived/accel/
+mkdir ${DATADIR}/derived/accel
+cp ${DATADIR}/original/accel/accel*.txt ${DATADIR}/derived/accel
 
 # BSD sed (on mac OS) requires a value for -i flag
 sed -i '' '1d' ${DATADIR}/derived/accel/accel*.txt

@@ -6,7 +6,7 @@ DATADIR='../../data'
 ## checking the accelerometer data
 
 # number of accelerometer files
-numFiles=`ls ${DATADIR}/original/accel/ | wc -l`
+numFiles=`ls ${DATADIR}/original/accel | wc -l`
 echo "Number of accelerometer files: $numFiles" 
 
 
@@ -14,7 +14,7 @@ echo "Number of accelerometer files: $numFiles"
 
 # list some files
 echo "Some file names:"
-ls ${DATADIR}/original/accel/ | head
+ls ${DATADIR}/original/accel | head
 
 # look at the top of an example file
 echo "Top of example file:"
