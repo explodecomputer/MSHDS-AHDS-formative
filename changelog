@@ -1,0 +1,10 @@
+2024-10-28
+
+- Made the `code` directory flat
+- Renamed week 5's script to be named `6-demo-data-prep.R`
+- Updated paths in the various scripts to reflect flattening `code` directory
+- Removed interactive X11 elements from `6-demo-data-prep.R`
+- Updated `directory-setup-commands.sh` to include a `logs/` directory and to replace `mkdir` with `mkdir -p` to avoid errors when the directories already exist
+- Updated the `ahds_formative_environment.yml` to include snakemake
+- Added `Snakemake` file.
+- Created `formative` directory for formatative assessment instructions and answers
