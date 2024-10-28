@@ -46,6 +46,7 @@ rule check_accel_data:
         cd code
         bash 2-data-check-accel.sh > ../logs/2-data-check-accel.log
         """
+
 # Fix the accelerometer data:
 rule fix_accel_data:
     input:
