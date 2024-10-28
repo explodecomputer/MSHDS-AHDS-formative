@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-DATADIR='../../data'
+DATADIR='../data'
 
 ##
 ## Removing the first line of each file with format <ACTIGRAPH ID=PARTICIPANT_ID>
@@ -9,7 +9,7 @@ DATADIR='../../data'
 
 echo -e "\n\nREMOVING FIRST LINE OF FORM  <ACTIGRAPH ID=PARTICIPANT_ID>\n"
 
-mkdir ${DATADIR}/derived/accel
+mkdir -p ${DATADIR}/derived/accel
 cp ${DATADIR}/original/accel/accel*.txt ${DATADIR}/derived/accel
 
 # BSD sed (on mac OS) requires a value for -i flag

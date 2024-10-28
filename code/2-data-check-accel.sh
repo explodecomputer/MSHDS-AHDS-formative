@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-DATADIR='../../data'
+DATADIR='../data'
 
 ##
 ## checking the accelerometer data
