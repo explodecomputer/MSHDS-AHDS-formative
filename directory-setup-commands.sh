@@ -6,11 +6,10 @@
 ## making directories
 
 mkdir -p data/original
-mkdir data/derived
-
-mkdir code
-
-mkdir results
+mkdir -p data/derived
+mkdir -p code
+mkdir -p results
+mkdir -p logs
 
 
 ##

@@ -26,6 +26,8 @@ conda export --from-history > ahds_formative_environment.yml
 
 ## Description of the data
 
+To obtain the data see `directory-setup-commands.sh`.
+
 ### Body measures data
 
 There are 9951 rows, with data on 9950 participants and a header at the top containing column names. The file is comma separated.
