@@ -15,6 +15,15 @@ conda env create --file ahds_formative_environment.yml
 conda activate ahds_formative
 ```
 
+Note that this environment was initially created with:
+
+```
+conda create -n ahds_formative
+conda activate ahds_formative
+conda install r-base=4.4.1 r-tidyverse=2.0.0 r-janitor=2.2.0
+conda export --from-history >../../ahds_formative_environment.yml
+```
+
 ## Description of the data
 
 ### Body measures data
