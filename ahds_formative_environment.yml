@@ -1,9 +1,12 @@
 name: ahds_formative
 channels:
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
+  - python=3.12
   - r-base=4.4.1
   - r-tidyverse=2.0.0
   - r-janitor=2.2.0
+  - snakemake
 prefix: /opt/anaconda3/envs/ahds_formative
