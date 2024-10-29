@@ -99,16 +99,28 @@ Run `touch data/original/BMX_D.csv` to update the timestamp of the file. Then ru
 
 Now the output is more recent than the inputs so Snakemake runs things again.
 
-## 5. Add more rules
+## 5. Add the accelerometer data check rule
 
-Add a data check for the accelerometer data and create another log file as the output. Note that now instead of a single input file you have several thousand input files. You have two options to get Snakemake to run here:
+Add a data check rule for the accelerometer data and create another log file as the output. 
 
-1. Get it to just focus on one of the files. You can hardcode this filename into your rules. This is a useful simplification.
-2. Do it the proper way - get snakemake to load a list of all the `{pid}` values before it embarks on satisfying its rules, where the list of `{pid}` values is generated from the accelerometer data files and is used by snakemake to check all the files needed.
+a) Note that for this rule the script is processing several thousand input files, whereas our previous rule only had a single input file. It is good practice to start with a small number of files to test and develop your pipeline. Start with a single file (e.g. `data/original/accel/accel-31128.txt`) and see if you can get the rule working.
+
+b) Next, try to introduce a wildcard `{pid}` into the rule to allow the rule to work with any of the accelerometer data files. Look back at the advanced snakemake examples of how the `expand` function is used.
+
+c) Finally, try to get the snakemake rule to observe all the accelerometer data files. Hint: You can use this python code to get a list of the accelerometer data files at the start of the Snakefile before specifying the rules:
+
+```python
+import glob
+import re
+
+# Get the list of pid values from the filenames in data/original/accel/
+accel_files = glob.glob("data/original/accel/accel-*.txt")
+ACC_PID = [int(re.search(r"accel-(\d+).txt", f).group(1)) for f in accel_files]
+```
 
 ---
 
-Simplified version:
+a) Simplified version with a single hard coded accelerometer file:
 
 ```python
 
@@ -143,10 +155,11 @@ rule check_accel_data:
         """
 ```
 
-Using a few input files. The `ACC_PID` variable is then used in the rules to generate the lists of files to monitor and create.
+b) Using a few input files. The `ACC_PID` variable is then used in the rules to generate the lists of files to monitor and create.
 
 ```python
 ACC_PID = [31128, 31129, 31131, 31132, 31133, 31134, 31137]
+
 rule all:
     input:
         "logs/1-data-check-bm.log",
@@ -180,7 +193,7 @@ rule check_accel_data:
         """
 ```
 
-A more advanced solution would require a little bit of python code to create a list of all the input accelerometry files. For example this code would read a directory and find a list of all the `PID`s.
+c) A more advanced solution would require a little bit of python code to create a list of all the input accelerometry files. For example this code would read a directory and find a list of all the `PID`s.
 
 ```python
 import glob
@@ -215,7 +228,7 @@ accel_files = glob.glob("data/original/accel/accel-*.txt")
 ACC_PID = [int(re.search(r"accel-(\d+).txt", f).group(1)) for f in accel_files]
 
 # To keep things a bit simpler, we can hard-code a small list of participant IDs instead of reading in every participant ID from the filenames as above
-# This will mean that if any of the accelerometer data files change or some or added or removed then snakemake won't know to re-run the pipeline
+# This will mean that if any of the accelerometer data files change or some are added or removed then snakemake won't know to re-run the pipeline
 # ACC_PID = [31128, 31129, 31131, 31132, 31133, 31134, 31137]
 
 rule all:
@@ -272,7 +285,7 @@ rule fix_accel_data:
 
 ## Step 2: Generating a sample file
 
-# Our sample file contains an binary variable that indicates whether a participant is in our sample versus not in our sample.
+# Our sample file contains a binary variable that indicates whether a participant is in our sample versus not in our sample.
 # A participant is included in our sample if they have accelerometer data and a BMI value.
 # First we create a list of participant IDs for those with an accelerometer file:
 rule make_pid_list:
