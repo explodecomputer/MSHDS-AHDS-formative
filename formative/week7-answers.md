@@ -2,7 +2,7 @@
 
 You have **implicitly** created a pipeline to generate your data already. You expect some original data to be present, and then the scripts are named to be run in a particular order. The scripts expect some of the data as inputs, and creates some output files. Some of those output files are inputs for subsequent scripts. This is a pipeline.
 
-You can use Snakemake to make this pipeline **explicit**. Your objective is to write a Snakefile that will serve to 
+You can use Snakemake to make this pipeline **explicit**. Your objective is to write a Snakefile. In doing so, the snakemake orchestration will serve to 
 
 - manage the execution of your pipeline for example
     - checking what needs to be run
@@ -10,10 +10,12 @@ You can use Snakemake to make this pipeline **explicit**. Your objective is to w
     - making sure things are run in order
     - managing parallel analysis
     - determining if steps need to be re-run if inputs have changed
-- log the processes
+- log the execution of the processes
 - improve reproducibility
 - make it easier to share your work with others
-- make it easier to run your pipeline on different systems including HPC
+- eventually make it easier to run your pipeline on different systems including HPC
+
+By the end of this session you will have a `Snakefile` that can run all 6 of the data management scripts that you have generated in your codebase so far. Going forwards, as you add more scripts to your codebase, make sure that you include additional rules to your `Snakefile` reflect how those new scripts need to be integrated into the pipeline.
 
 ## 1. Getting started
 
@@ -141,7 +143,7 @@ rule check_accel_data:
         """
 ```
 
-Using a few input files:
+Using a few input files. The `ACC_PID` variable is then used in the rules to generate the lists of files to monitor and create.
 
 ```python
 ACC_PID = [31128, 31129, 31131, 31132, 31133, 31134, 31137]
@@ -177,6 +179,20 @@ rule check_accel_data:
         bash 2-data-check-accel.sh > ../logs/2-data-check-accel.log
         """
 ```
+
+A more advanced solution would require a little bit of python code to create a list of all the input accelerometry files. For example this code would read a directory and find a list of all the `PID`s.
+
+```python
+import glob
+import re
+
+# # Get the list of pid values from the filenames in data/original/accel/
+accel_files = glob.glob("data/original/accel/accel-*.txt")
+ACC_PID = [int(re.search(r"accel-(\d+).txt", f).group(1)) for f in accel_files]
+```
+
+This improves on the previous version because it automatically generates the list and includes all the files.
+
 
 ## 6. Add all other rules required to complete the pipeline
 
