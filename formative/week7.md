@@ -1,4 +1,4 @@
-# Snakemake pipeline for formative assessment analysis
+# Formative assessment week 7: Snakemake
 
 You have **implicitly** created a pipeline to generate your data already. You expect some original data to be present, and then the scripts are named to be run in a particular order. The scripts expect some of the data as inputs, and creates some output files. Some of those output files are inputs for subsequent scripts. This is a pipeline.
 
