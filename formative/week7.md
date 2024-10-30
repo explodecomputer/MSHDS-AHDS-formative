@@ -24,7 +24,7 @@ You will need `snakemake` installed within your conda environment. Whenever you 
 
 - Add the `bioconda` channel
 - Add the `snakemake` package as a dependency
-- Note that `snakemake` currently works up to python 3.12. You may have python 3.13 installed. So add `python=3.13` as one of your dependencies also.
+- Note that `snakemake` currently works up to python 3.12. You may have python 3.13 installed. So add `python=3.12` as one of your dependencies also.
 
 ## 2. Create a Snakefile
 
