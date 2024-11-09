@@ -7,7 +7,7 @@ ACC_PID = [int(re.search(r"accel-(\d+).txt", f).group(1)) for f in accel_files]
 
 # To keep things a bit simpler, we can hard-code a small list of participant IDs instead of reading in every participant ID from the filenames as above
 # This will mean that if any of the accelerometer data files change or some or added or removed then snakemake won't know to re-run the pipeline
-# ACC_PID = [31128, 31129, 31131, 31132, 31133, 31134, 31137]
+ACC_PID = [31128, 31129, 31131, 31132, 31133, 31134, 31137]
 
 rule all:
     input:
@@ -127,6 +127,5 @@ rule merge_data:
 rule clean:
     "clean up all non-original data"
     shell: """
-    rm -r data/derived/*
-    rm -r results/*
+    rm -r data/derived/
     """

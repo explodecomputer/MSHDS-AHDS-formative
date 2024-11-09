@@ -13,7 +13,7 @@ mkdir -p ${DATADIR}/derived/accel
 cp ${DATADIR}/original/accel/accel*.txt ${DATADIR}/derived/accel
 
 # BSD sed (on mac OS) requires a value for -i flag
-sed -i '' '1d' ${DATADIR}/derived/accel/accel*.txt
+sed -i '1d' ${DATADIR}/derived/accel/accel*.txt
 
 # on linux (GNU sed) use:
 # sed -i '1d' ${DATADIR}/derived/accel/accel*.txt
@@ -36,7 +36,7 @@ head -n1 ${DATADIR}/derived/accel/accel*.txt | grep $header | wc -l
 echo -e "\n\nRemoving lines with NA\tNA\tNA\n"
 
 # remove those lines
-sed -i '' '/NA\tNA\tNA/d' ${DATADIR}/derived/accel/accel-*.txt
+sed -i '/NA\tNA\tNA/d' ${DATADIR}/derived/accel/accel-*.txt
 
 # check the files to make sure the lines have been removed correctly - rerun same command as above to find lines that don't have 8 columns
 echo "Any lines still not with 8 columns are listed here:"
