@@ -21,6 +21,16 @@ rule all:
         "logs/6-demo-data-prep.log"
 
 
+rule setup:
+    "setup required directories"
+    shell: """
+    mkdir -p logs
+    mkdir -p data/derived
+    mkdir -p data/original
+    mkdir -p results
+    """
+
+
 ## Step 1: Checking the data files and making sure they are in a standard file format
 # Check the body measures data:
 rule check_bm_data:
@@ -113,3 +123,10 @@ rule merge_data:
         cd code
         Rscript 6-demo-data-prep.R > ../logs/6-demo-data-prep.log
         """
+
+rule clean:
+    "clean up all non-original data"
+    shell: """
+    rm -r data/derived/*
+    rm -r results/*
+    """
