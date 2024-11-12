@@ -28,7 +28,7 @@ Your project should all be under version control on GitHub. This makes it extrem
     - Get the git repository's HTTPS URL from GitHub
     - Use `git clone` to clone the repository
 
-If your code is not on github you can use WinSCP or something similar to copy your code into the relevant directory.
+If your code is not on github you can use `scp` to copy your code into the relevant directory.
 
 ---
 
@@ -43,7 +43,7 @@ git clone https://github.com/explodecomputer/MSHDS-AHDS-formative.git
 
 ### B. Getting our data on HPC
 
-Use WinSCP or similar to copy your original data into `$WORK/projects/<formative>/data/original`. You can see how the data was setup originally on your computer in the `directory-setup-commands.sh` script.
+Use `scp` to copy your original data into `$WORK/projects/<formative>/data/original`. You can see how the data was setup originally on your computer in the `directory-setup-commands.sh` script.
 
 
 ### C. Setup your conda environment
@@ -64,7 +64,7 @@ pip install snakemake-executor-plugin-slurm
 
 ### D. Check that your scripts work as expected
 
-- Ideally you would only run analysis on HPC by submitting your scripts to the worker nodes. However it is prudent to check that trivial errors are not present such as incorrect directory names etc. You can check this by starting to run your analysis scripts and seeing if it works.
+- Ideally you would only run analysis on HPC by submitting your scripts to the worker nodes. However it can be helpful to check that trivial errors are not present such as incorrect directory names etc before submitting your job. You can check this by **starting** to run your analysis scripts in the login node to see if it works and then killing it as quickly as possible (`ctrl+c`).
 
 ## 2. Create a submission script
 
@@ -175,3 +175,12 @@ Given the changes that you have made, what should you do to finalise and record 
 - Update your `environment.yml` file to include the slurm plugin e.g. `conda list -e > environment.yml`
 - Commit your changes to git and synchronise with GitHub.
 
+## 5. Advanced: Re-factoring to run in parallel
+
+Currently the whole pipeline is run sequentially. That means that each job waits for the previous job to finish before starting. This does not take advantage of the benefits of HPC which can run multiple jobs in parallel.
+
+Identify areas of your pipeline that could feasibly be split into separate jobs that can run in parallel. Refactor your pipeline to take advantage of this, and implement it into Snakemake.
+
+---
+
+TBD
