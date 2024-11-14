@@ -16,7 +16,7 @@ cd "${SLURM_SUBMIT_DIR}"
 
 # Conda environment
 source ~/.initMamba.sh
-mamba activate ahds_week9
+mamba activate ahds_formative
 
 # Setup directories
 mkdir -p logs
