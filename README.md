@@ -8,6 +8,8 @@ Unit Leads: Oliver Davis and Louise Millard.
 
 This code was run on a Macbook Pro (Sonoma 14.7), in bash and R version 4.4.1.
 
+It was also run on bluecrystal4.
+
 The R environment is recorded in the ahds_formative_environment.yml file in this directory. To create this environment in Conda, use:
 
 ```
