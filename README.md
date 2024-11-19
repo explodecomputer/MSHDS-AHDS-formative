@@ -8,6 +8,8 @@ Unit Leads: Oliver Davis and Louise Millard.
 
 This code was run on a Macbook Pro (Sonoma 14.7), in bash and R version 4.4.1.
 
+It was also run on bluecrystal4.
+
 The R environment is recorded in the ahds_formative_environment.yml file in this directory. To create this environment in Conda, use:
 
 ```
@@ -63,4 +65,25 @@ There are 10,348 rows with one participant per row, and 43 variables, including:
 
 The pipeline is managed by a Snakefile in the root directory. See the `Snakefile` for details of the steps in the pipeline.
 
+To run the pipeline on HPC make sure you have a config file specified in `~/.config/snakemake/slurm_profile/config.yaml`. Template:
+
+```yaml
+default-resources:
+  - slurm_partition="teach_cpu"
+  - slurm_account="???"
+  - mem_mb="100"
+  - runtime="10"
+  - ntasks="1"
+  - nodes="1"
+jobs: 10
+printshellcmds: True
+scheduler: greedy
+use-conda: True
+```
+
+To run (e.g. in `tmux`)
+
+```
+snakemake --executor slurm --profile slurm_profile
+```
 

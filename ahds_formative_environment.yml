@@ -9,4 +9,5 @@ dependencies:
   - r-tidyverse=2.0.0
   - r-janitor=2.2.0
   - snakemake
+  - snakemake-executor-plugin-slurm
 prefix: /opt/anaconda3/envs/ahds_formative

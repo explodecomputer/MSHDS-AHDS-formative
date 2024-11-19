@@ -7,7 +7,7 @@ ACC_PID = [int(re.search(r"accel-(\d+).txt", f).group(1)) for f in accel_files]
 
 # To keep things a bit simpler, we can hard-code a small list of participant IDs instead of reading in every participant ID from the filenames as above
 # This will mean that if any of the accelerometer data files change or some or added or removed then snakemake won't know to re-run the pipeline
-# ACC_PID = [31128, 31129, 31131, 31132, 31133, 31134, 31137]
+ACC_PID = [31128, 31129, 31131, 31132, 31133, 31134, 31137]
 
 rule all:
     input:
@@ -21,6 +21,16 @@ rule all:
         "logs/6-demo-data-prep.log"
 
 
+rule setup:
+    "setup required directories"
+    shell: """
+    mkdir -p logs
+    mkdir -p data/derived
+    mkdir -p data/original
+    mkdir -p results
+    """
+
+
 ## Step 1: Checking the data files and making sure they are in a standard file format
 # Check the body measures data:
 rule check_bm_data:
@@ -28,10 +38,11 @@ rule check_bm_data:
         "data/original/BMX_D.csv"
     output:
         "logs/1-data-check-bm.log"
+    log: "logs/1-data-check-bm.log"
     shell:
         """
         cd code
-        bash 1-data-check-bm.sh > ../logs/1-data-check-bm.log
+        bash 1-data-check-bm.sh 2>&1 ../{log}
         """
 
 # Check the accelerometer data:
@@ -41,10 +52,11 @@ rule check_accel_data:
         expand("data/original/accel/accel-{pid}.txt", pid=ACC_PID)
     output:
         "logs/2-data-check-accel.log"
+    log: "logs/2-data-check-accel.log"
     shell:
         """
         cd code
-        bash 2-data-check-accel.sh > ../logs/2-data-check-accel.log
+        bash 2-data-check-accel.sh 2>&1 ../{log}
         """
 
 # Fix the accelerometer data:
@@ -55,10 +67,11 @@ rule fix_accel_data:
     output:
         expand("data/derived/accel/accel-{pid}.txt", pid=ACC_PID),
         "logs/3-data-fix-accel.log"
+    log: "logs/3-data-fix-accel.log"
     shell:
         """
         cd code
-        bash 3-data-fix-accel.sh > ../logs/3-data-fix-accel.log
+        bash 3-data-fix-accel.sh 2>&1 ../{log}
         """
 
 ## Step 2: Generating a sample file
@@ -73,10 +86,11 @@ rule make_pid_list:
     output:
         "data/derived/accel/pids-with-accel.txt",
         "logs/4-list-accel-ids.log"
+    log: "logs/4-list-accel-ids.log"
     shell:
         """
         cd code
-        bash 4-list-accel-ids.sh > ../logs/4-list-accel-ids.log
+        bash 4-list-accel-ids.sh 2>&1 ../{log}
         """
 # Then we derive a sample file:
 rule make_sample:
@@ -87,10 +101,11 @@ rule make_sample:
     output:
         "data/derived/sample.csv",
         "logs/5-generate-sample.log"
+    log: "logs/5-generate-sample.log"
     shell:
         """
         cd code
-        Rscript 5-generate-sample.R > ../logs/5-generate-sample.log
+        Rscript 5-generate-sample.R 2>&1 ../{log}
         """
 
 
@@ -108,8 +123,22 @@ rule merge_data:
         "data/derived/body_measurements.csv",
         "logs/6-demo-data-prep.log"
     conda: "ahds_formative"
+    log: "logs/6-demo-data-prep.log"
     shell:
         """
         cd code
-        Rscript 6-demo-data-prep.R > ../logs/6-demo-data-prep.log
+        Rscript 6-demo-data-prep.R 2>&1 ../{log}
         """
+
+rule clean:
+    "clean up all non-original data"
+    log: "logs/clean.log"
+    shell: """
+    if [ ! -z "$( ls -A 'data/derived' )" ]; then
+        rm -r data/derived/*  2>&1> {log}
+    fi
+
+    if [ ! -z "$( ls -A 'logs' )" ]; then
+        rm -r logs/* 2>&1> {log}
+    fi
+    """
