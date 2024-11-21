@@ -50,7 +50,6 @@ rule check_bm_data:
 # Check the accelerometer data
 # Split it into batches
 for index in indexes:
-    index = str(index)
     rule:
         name: f"{index}_check_accel_data"
         params: index=f"{index}"
@@ -68,7 +67,6 @@ for index in indexes:
 
 # Fix the accelerometer data:
 for index in indexes:
-    index = str(index)
     rule:
         name: f"{index}_fix_accel_data"
         params: index=f"{index}"

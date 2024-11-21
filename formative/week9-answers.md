@@ -183,4 +183,139 @@ Identify areas of your pipeline that could feasibly be split into separate jobs 
 
 ---
 
-TBD
+This is a tricky one to solve, but we can get some clues from the `topic-wildcards` example from the Week 7 Snakemake practical. Here's the strategy.
+
+**How to break up the long running jobs**. The `2-data-check-accel.sh` and the `3-data-fix-accel.sh` scripts are the longest running jobs because they each do operations on 7000+ files. The first task is to modify these scripts to accept a command line argument that specifies only to work on a subset of the files. The second task is to update the Snakefile to call these scripts multiple times with different subsets of the files.
+
+**Updating the .sh scripts**
+
+Notice that in the `data/original/accel/` directory, the files are named `accel-31###.txt`, `accel-32###.txt`, ..., `accel-41###.txt`. We can use this to our advantage. Modify the `2-data-check-accel.sh` script to accept a command line argument that specifies the prefix to work on:
+
+```bash
+batch=$1
+
+if [ -z "$batch" ]; then
+    echo "No batch provided. Doing everything"
+    batch=""
+fi
+```
+
+and then modify the main process of the script to only work on files that match the batch. For example change
+
+```bash
+cat ${DATADIR}/original/accel/accel-*.txt | grep -v '<' | awk -F'\t' '{print NF}' | grep -v 8 | sort -u
+```
+
+to
+
+```bash
+cat ${DATADIR}/original/accel/accel-${batch}*.txt | grep -v '<' | awk -F'\t' '{print NF}' | grep -v 8 | sort -u
+```
+
+Wherever you see `accel-*.txt` in the script, replace it with `accel-${batch}*.txt`. Now to run `2-data-check-accel.sh`, you can either run it on the whole set of files:
+
+```bash
+bash code/2-data-check-accel.sh
+```
+
+or only on a subset of the files:
+
+```bash
+bash code/2-data-check-accel.sh 31
+```
+
+We would use the same logic to update the `3-data-fix-accel.sh` script. See the code repository at https://github.com/explodecomputer/MSHDS-AHDS-formative for how these files look after they've been updated.
+
+**Updating the Snakefile**
+
+The next step is to update the Snakefile to call these scripts multiple times with different subsets of the files. Currently, our Snakefile starts by listing all the files in the `data/original/accel/` directory so that it knows what the inputs need to be, like this:
+
+```python
+import glob
+import re
+
+# Get the list of pid values from the filenames in data/original/accel/
+accel_files = glob.glob("data/original/accel/accel-*.txt")
+ACC_PID = [int(re.search(r"accel-(\d+).txt", f).group(1)) for f in accel_files]
+```
+
+We can build on this by using simple python commands to split the list of `ACC_PID` values into 11 sub-lists, where each sub-list is all the files that are in that batch.
+
+```python
+# The list of PID prefixes to use as batches
+indexes = [str(x) for x in range(31, 42)]
+
+# Create a dictionary of PID prefixes to lists of PID values
+# This is a dictionary of lists, one list for every index in `indexes`
+ACC_PID_dict = {index: [pid for pid in ACC_PID if str(pid).startswith(index)] for index in indexes}
+```
+
+What this means is that our rules can now be split by each item in `indexes`. Here is the original rule that we used to run `2-data-check-accel.sh`:
+
+```python
+# Check the accelerometer data:
+rule check_accel_data:
+    input:
+        "logs/1-data-check-bm.log",
+        expand("data/original/accel/accel-{pid}.txt", pid=ACC_PID)
+    output:
+        "logs/2-data-check-accel.log"
+    log: "logs/2-data-check-accel.log"
+    shell:
+        """
+        cd code
+        bash 2-data-check-accel.sh 2>&1 ../{log}
+        """
+```
+
+It runs `2-data-check-accel.sh` on all the files in `data/original/accel/`. We can now split this rule into 11 rules, one for each batch:
+
+```python
+for index in indexes:
+    rule:
+        name: f"{index}_check_accel_data"
+        params: index=f"{index}"
+        input:
+            "logs/1-data-check-bm.log",
+            expand("data/original/accel/accel-{pid}.txt", pid=ACC_PID_dict[index])
+        output:
+            f"logs/2-data-check-accel_{index}.log"
+        log: f"logs/2-data-check-accel_{index}.log"
+        shell:
+            """
+            cd code
+            bash 2-data-check-accel.sh {params.index} 2>&1 ../{log}
+            """
+```
+
+Let's examine what is going on here.
+
+1. We have a for loop, which loops over each list in the list of lists `indexes`.
+2. We've defined a parameter inside the rule called `index`. So in the first iteration of the loop, `index` will be `31`, in the second iteration it will be `32`, and so on.
+3. The inputs have been modified - now we only expect as inputs the `accel-31*.txt` files in the first iteration, the `accel-32*.txt` files in the second iteration, and so on. In the previous version we expected all the files.
+4. The output has been modified - now we expect as output the `logs/2-data-check-accel_31.log` file in the first iteration, instead of just `logs/2-data-check-accel.log`.
+5. The shell command has been modified - now we pass the `index` parameter to the `2-data-check-accel.sh` script, so that it only works on the files that match the batch.
+
+We'll have to update the `all` rule as well, because it now needs to find all the `logs/2-data-check-accel_*.log` files instead of just `logs/2-data-check-accel.log`.
+
+```python
+rule all:
+    input:
+        expand("logs/2-data-check-accel_{index}.log", index=indexes)
+```
+
+Using this logic, the rule that runs `3-data-fix-accel.sh` can be split in the same way. Have a look at the `Snakefile-batches` file in the code repository at https://github.com/explodecomputer/MSHDS-AHDS-formative. To run this version of the Snakefile, you would use this command if you're running it on your laptop:
+
+```bash
+snakemake -c1 -s Snakefile-batches
+```
+
+or this command if you're running it on HPC:
+
+```bash
+snakemake --executor slurm --profile slurm_profile -s Snakefile-batches
+```
+
+Notice that by splitting up steps `2` and `3` into batches, we can now run them in parallel if we have enough compute resources to do this. i.e. if you have many cores on your laptop you can use `snakemake -c 10 -s Snakefile-batches` to run up to 10 jobs in parallel. Or running on HPC will automatically submit jobs to the scheduler to run in parallel.
+
+You can see a minimal example of this batching process in the `Snakefile-batches-minimal-example` file in the code repository at https://github.com/explodecomputer/MSHDS-AHDS-formative. This splits up the `accel-*` in the same way, but is a very simple pipeline, where step 1 is to copy each file to a new directory, and step 2 is to list all the copied files. But it demonstrates the principle of splitting up the jobs into batches.
