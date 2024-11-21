@@ -1,0 +1,156 @@
+import glob
+import re
+
+# Get the list of pid values from the filenames in data/original/accel/
+accel_files = glob.glob("data/original/accel/accel-*.txt")
+ACC_PID = [int(re.search(r"accel-(\d+).txt", f).group(1)) for f in accel_files]
+
+# The list of PID prefixes to use as batches
+indexes = [str(x) for x in range(31, 42)]
+
+# Create a dictionary of PID prefixes to lists of PID values
+# This is a dictionary of lists, one list for every index in `indexes`
+ACC_PID_dict = {index: [pid for pid in ACC_PID if str(pid).startswith(index)] for index in indexes}
+
+rule all:
+    input:
+        "logs/1-data-check-bm.log",
+        expand("data/derived/accel/accel-{pid}.txt", pid=ACC_PID),
+        expand("logs/2-data-check-accel_{index}.log", index=indexes),
+        expand("logs/3-data-fix-accel_{index}.log", index=indexes),
+        "logs/4-list-accel-ids.log",
+        "logs/5-generate-sample.log",
+        "logs/6-demo-data-prep.log",
+        "data/derived/sample.csv",
+        "data/derived/body_measurements.csv"
+
+rule setup:
+    "setup required directories"
+    shell: """
+    mkdir -p logs
+    mkdir -p data/derived
+    mkdir -p data/original
+    mkdir -p results
+    """
+
+
+# Check the body measures data:
+rule check_bm_data:
+    input:
+        "data/original/BMX_D.csv"
+    output:
+        "logs/1-data-check-bm.log"
+    log: "logs/1-data-check-bm.log"
+    shell:
+        """
+        cd code
+        bash 1-data-check-bm.sh 2>&1 ../{log}
+        """
+
+# Check the accelerometer data
+# Split it into batches
+for index in indexes:
+    index = str(index)
+    rule:
+        name: f"{index}_check_accel_data"
+        params: index=f"{index}"
+        input:
+            "logs/1-data-check-bm.log",
+            expand("data/original/accel/accel-{pid}.txt", pid=ACC_PID_dict[index])
+        output:
+            f"logs/2-data-check-accel_{index}.log"
+        log: f"logs/2-data-check-accel_{index}.log"
+        shell:
+            """
+            cd code
+            bash 2-data-check-accel.sh {params.index} 2>&1 ../{log}
+            """
+
+# Fix the accelerometer data:
+for index in indexes:
+    index = str(index)
+    rule:
+        name: f"{index}_fix_accel_data"
+        params: index=f"{index}"
+        input:
+            f"logs/2-data-check-accel_{index}.log",
+            expand("data/original/accel/accel-{pid}.txt", pid=ACC_PID_dict[index])
+        output:
+            expand("data/derived/accel/accel-{pid}.txt", pid=ACC_PID_dict[index]),
+            f"logs/3-data-fix-accel_{index}.log"
+        log: f"logs/3-data-fix-accel_{index}.log"
+        shell:
+            """
+            cd code
+            bash 3-data-fix-accel.sh {params.index} 2>&1 ../{log}
+            """
+
+# ## Step 2: Generating a sample file
+
+# Our sample file contains an binary variable that indicates whether a participant is in our sample versus not in our sample.
+# A participant is included in our sample if they have accelerometer data and a BMI value.
+# First we create a list of participant IDs for those with an accelerometer file:
+rule make_pid_list:
+    input:
+        "logs/3-data-fix-accel.log",
+        expand("data/derived/accel/accel-{pid}.txt", pid=ACC_PID)
+    output:
+        "data/derived/accel/pids-with-accel.txt",
+        "logs/4-list-accel-ids.log"
+    log: "logs/4-list-accel-ids.log"
+    shell:
+        """
+        cd code
+        bash 4-list-accel-ids.sh 2>&1 ../{log}
+        """
+
+# Then we derive a sample file:
+rule make_sample:
+    input:
+        "logs/1-data-check-bm.log",
+        "data/derived/accel/pids-with-accel.txt",
+        "data/original/BMX_D.csv"
+    output:
+        "data/derived/sample.csv",
+        "logs/5-generate-sample.log"
+    log: "logs/5-generate-sample.log"
+    shell:
+        """
+        cd code
+        Rscript 5-generate-sample.R 2>&1 ../{log}
+        """
+
+
+# Preparing and merging the demographics data
+
+# Preparing and merging demographics variables into the body measurements data. 
+# It also merges in the sample file prepared previously and saves the combined body_measurements.csv file to the derived data directory.
+# Variable names are standardised to lower snake case.
+rule merge_data:
+    input:
+        "data/original/BMX_D.csv",
+        "data/original/DEMO_D.XPT",
+        "data/derived/sample.csv"
+    output:
+        "data/derived/body_measurements.csv",
+        "logs/6-demo-data-prep.log"
+    conda: "ahds_formative"
+    log: "logs/6-demo-data-prep.log"
+    shell:
+        """
+        cd code
+        Rscript 6-demo-data-prep.R 2>&1 ../{log}
+        """
+
+rule clean:
+    "clean up all non-original data"
+    log: "logs/clean.log"
+    shell: """
+    if [ ! -z "$( ls -A 'data/derived' )" ]; then
+        rm -r data/derived/*  2>&1> {log}
+    fi
+
+    if [ ! -z "$( ls -A 'logs' )" ]; then
+        rm -r logs/* 2>&1> {log}
+    fi
+    """

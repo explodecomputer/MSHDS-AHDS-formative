@@ -1,0 +1,52 @@
+import glob
+import re
+
+# Get the list of pid values from the filenames in data/original/accel/
+accel_files = glob.glob("data/original/accel/accel-*.txt")
+ACC_PID = [int(re.search(r"accel-(\d+).txt", f).group(1)) for f in accel_files]
+
+# The list of PID prefixes to use as batches
+indexes = [str(x) for x in range(31, 42)]
+
+# Create a dictionary of PID prefixes to lists of PID values
+# This is a dictionary of lists, one list for every index in `indexes`
+ACC_PID_dict = {index: [pid for pid in ACC_PID if str(pid).startswith(index)] for index in indexes}
+
+rule all:
+    input:
+        "file-list.txt"
+
+for index in indexes:
+    rule:
+        name: f"{index}_fix"
+        params: index=f"{index}"
+        input:
+            expand("data/original/accel/accel-{pid}.txt", pid=ACC_PID_dict[index])
+        output:
+            expand("data/derived2/accel/accel-{pid}.txt", pid=ACC_PID_dict[index])
+        shell:
+            """
+            bash code/copy.sh {params.index}
+            """
+
+
+# rule copy:
+#     input:
+#         expand("data/original/accel/accel-{pid}.txt", pid=ACC_PID)
+#     output:
+#         expand("data/derived2/accel/accel-{pid}.txt", pid=ACC_PID)
+#     shell:
+#         """
+#         bash code/copy.sh
+#         """
+
+rule list:
+    input:
+        expand("data/derived2/accel/accel-{pid}.txt", pid=ACC_PID)
+    output:
+        "file-list.txt"
+    shell:
+        """
+        ls data/derived2/accel/ > {output}
+        """
+

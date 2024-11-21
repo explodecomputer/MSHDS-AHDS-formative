@@ -1,6 +1,13 @@
 #!/bin/bash 
 
 DATADIR='../data'
+batch=$1
+
+if [ -z "$batch" ]; then
+    echo "No batch provided. Doing everything"
+    batch=""
+fi
+
 
 ##
 ## checking the accelerometer data
@@ -30,13 +37,13 @@ awk -F'\t' '{print NF}' ${DATADIR}/original/accel/accel-31128.txt | head
 
 # check that all lines have 8 columns
 echo "Number of columns found in the accelerometer files, different from 8:"
-cat ${DATADIR}/original/accel/accel-*.txt | grep -v '<' | awk -F'\t' '{print NF}' | grep -v 8 | sort -u
+cat ${DATADIR}/original/accel/accel-${batch}*.txt | grep -v '<' | awk -F'\t' '{print NF}' | grep -v 8 | sort -u
 
 # print all lines that don't have 8 columns
 echo "Lines that don't have 8 columns:"
-cat ${DATADIR}/original/accel/accel-*.txt | grep -v '<' | awk -F'\t' '(NF!=8){print $0}' | sort -u
+cat ${DATADIR}/original/accel/accel-${batch}*.txt | grep -v '<' | awk -F'\t' '(NF!=8){print $0}' | sort -u
 
 # see which files the NA lines exist in
 echo "Files containing NA lines:"
-grep -vH '<' ${DATADIR}/original/accel/accel-*.txt | grep "NA\tNA\tNA" | sort -u
+grep -vH '<' ${DATADIR}/original/accel/accel-${batch}*.txt | grep "NA\tNA\tNA" | sort -u
 
