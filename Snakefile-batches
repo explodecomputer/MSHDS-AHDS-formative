@@ -90,7 +90,7 @@ for index in indexes:
 # First we create a list of participant IDs for those with an accelerometer file:
 rule make_pid_list:
     input:
-        "logs/3-data-fix-accel.log",
+        expand("logs/3-data-fix-accel_{index}.log", index=indexes),
         expand("data/derived/accel/accel-{pid}.txt", pid=ACC_PID)
     output:
         "data/derived/accel/pids-with-accel.txt",
@@ -105,7 +105,6 @@ rule make_pid_list:
 # Then we derive a sample file:
 rule make_sample:
     input:
-        "logs/1-data-check-bm.log",
         "data/derived/accel/pids-with-accel.txt",
         "data/original/BMX_D.csv"
     output:

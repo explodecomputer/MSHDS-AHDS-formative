@@ -95,7 +95,6 @@ rule make_pid_list:
 # Then we derive a sample file:
 rule make_sample:
     input:
-        "logs/1-data-check-bm.log",
         "data/derived/accel/pids-with-accel.txt",
         "data/original/BMX_D.csv"
     output:
